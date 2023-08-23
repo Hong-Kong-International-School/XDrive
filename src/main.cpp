@@ -7,44 +7,63 @@
 #define FILE_OUT
 #endif
 
+// Define the port numbers for the motors and gears
 const int32_t LM1PORT = vex::PORT1;
 const int32_t LM2PORT = vex::PORT2;
 const int32_t RM1PORT = vex::PORT3;
 const int32_t RM2PORT = vex::PORT4; 
 const int32_t GEARPORT = vex::PORT5;
+
+// Set the gear ratio for the motors
 const vex::gearSetting GEARS = vex::gearSetting::ratio18_1;
+
+// Set the motor direction
 const bool REVERSE = false;
 
+// Create motor objects for the left and right motors
 vex::motor left_motor_1(LM1PORT, GEARS, REVERSE), left_motor_2(LM2PORT, GEARS, REVERSE);
 vex::motor right_motor_1(RM1PORT, GEARS, !REVERSE), right_motor_2(RM2PORT, GEARS, !REVERSE);
+
+// Create a controller object
 vex::controller controller(vex::controllerType::primary);
+// Create a brain object
 vex::brain brain;
+// Create a GPS (Global Positioning System) object
 vex::gps gps(GEARPORT, 0.0, vex::turnType::left);
 
 #ifdef DEBUG_FUNCTION
+// Declare a function for debugging the GPS functionality
 inline bool functional_gps();
 #endif
 
+// Declare a function for toggling a button state
 inline bool toggle(vex::controller::button button, bool & toggle_state, bool & last_toggle_state);
 
+// Declare functions for controlling the robot
 void control(vex::controller::button precision_toggle);
 void move(double x, double y, double heading);
 void turn(double delta_heading);
 void set_heading(double heading);
 
+// Declare functions for autonomous and driver control periods
 void autonomous_period();
 void control_period();
 
+// Main function
 int main() {
+    // Set the competition functions
     vex::competition competition;
     competition.autonomous(autonomous_period);
     competition.drivercontrol(control_period);
 }
 
+
+// Autonomous period function
 void autonomous_period() {
 
 }
 
+// Autonomous period function
 void control_period() {
 
 }

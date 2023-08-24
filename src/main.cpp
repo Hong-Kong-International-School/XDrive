@@ -94,13 +94,17 @@ namespace dtvar {
 
 }
 
+// Define namespace for the controller
 namespace cntrlvar {
+    // Declare variables for controller axis inputs
     double controller_axis_1, controller_axis_2, controller_axis_3, controller_axis_4;
+    // Declare a variable for precision control constant
     double precision_constant;
 }
 
 #ifdef DEBUG_FUNCTION
 inline bool functional_gps() {
+    // Check if GPS position and heading is all zero
     if (gps.xPosition() == 0.0 and gps.yPosition() == 0.0 and gps.heading() == 0.0) {
         return false;
     }
@@ -108,6 +112,7 @@ inline bool functional_gps() {
 }
 #endif
 
+// Function for toggling boolean with button
 inline bool toggle(vex::controller::button button, bool & toggle_state, bool & past_state) {
     if (button.pressing() and past_state == false) {
         return toggle_state = not toggle_state;

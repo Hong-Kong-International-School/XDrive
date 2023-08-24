@@ -68,28 +68,61 @@ void control_period() {
 
 }
 
+// Declare variables for driver
 namespace dtvar {
 
+    // Declare acceptable error range for distance and rotation
     const double distance_tolerance = 5.0;
     const double rotation_tolerance = 1.0;
-    const double kp = 1.0;
-    const double ki = 0.0;
-    const double kd = 0.0;
-    const double kpa = 0.1;
-    const double kia = 0.0;
-    const double kda = 0.0;
-    const double forget_constant = 0.99;
-    const double precision_constant = 0.2;
 
+    // Declares PID gains for positional control (Adjusts the motor power based on position from target)
+    const double kp = 1.0; // Proportional Value
+    const double ki = 0.0; // Integeral Value
+    const double kd = 0.0; // Distance Value
+
+    // Declares PID gains for rotational control (Adjusts the motor power (for rotation) based on position and angle from target)
+    const double kpa = 0.1; // Proportional Value
+    const double kia = 0.0; // Integeral Value
+    const double kda = 0.0; // Distance Value
+
+    // Constants used for percision and smoothing control
+    const double forget_constant = 0.99; // How much previous motor control affects current motor control
+    const double precision_constant = 0.2; // Percision of robot's movements
+
+    // Variables control and store the 4 motor speeds in the XDrive config (Updated based on calculated motor power)
     double left_motor_1_speed, left_motor_2_speed, right_motor_1_speed, right_motor_2_speed;
+
+    // Variables store the trig calculations during XDrive implementation. Theta refers to the angle, and sine and cosine referrs
+    // To the trig functions.
     double theta, sine, cosine;
+
+    // Variables store the current x, y, and rotation of the XDrive
     double current_x, current_y, current_rotation;
+
+    // Variables store the relative x, y, and rotation of the XDrive in respect to the target location
     double relative_x, relative_y, relative_rotation;
+
+    // Variables store the difference between the desired and current x, y, and rotational values.
     double error_axis_1, error_axis_2, error_rotation;
+
+    // Variables store the "porportional" part of PID, calculated by multiplying positional and rotation errors by their respective
+    // Porportional gains (Variables kp, kpa)
     double proportional_axis_1, proportional_axis_2, proportional_rotation;
+
+    // Variables store the "Intergral" part of PID, calculated by accuminlating the positional and integeral values over time and
+    // multiplying them by their repective intergral gains (Variables ki, kia)
     double integral_axis_1, integral_axis_2, integral_rotation;
+
+    // Variables store the "Intergral" part of PID, calculated by calculating the rate of change for positional and rotational errors
+    // and multiplying them by their repective derivitive gains (Variables kd, kda)
     double derivative_axis_1, derivative_axis_2, derivative_rotation;
+
+    // These variables store the last positional and rotational errors for calculation the rate of change for deriviatve and integeral 
+    // variables used for PID (above two)
     double last_error_axis_1, last_error_axis_2, last_error_rotation;
+
+    // These variables store the final positional and rotational power calculations for the XDrive (PID System), used to set speed
+    // For XDrive configs.
     double power_axis_1, power_axis_2, power_rotation;
 
 }

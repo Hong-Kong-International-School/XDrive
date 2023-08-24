@@ -120,26 +120,33 @@ inline bool toggle(vex::controller::button button, bool & toggle_state, bool & p
     return toggle_state;
 }
 
+// 
 void control(vex::controller::button precision_toggle) {
+
+    // Precision state and helper variable as the while loop goes quickly so two variables are needed to make sure it doesn't rapidly toggle
     bool precision_state = false, last_precision_state = false;
     
     while (true) {
+        // Read controller axis positions
         cntrlvar::controller_axis_1 = controller.Axis1.position();
         cntrlvar::controller_axis_2 = controller.Axis2.position();
         cntrlvar::controller_axis_3 = controller.Axis3.position();
         cntrlvar::controller_axis_4 = controller.Axis4.position();
+        // Calculate mmotor speeds based on controller inputs
         dtvar::left_motor_1_speed = cntrlvar::controller_axis_3 + cntrlvar::controller_axis_4 + cntrlvar::controller_axis_1;
         dtvar::left_motor_2_speed = cntrlvar::controller_axis_3 - cntrlvar::controller_axis_4 + cntrlvar::controller_axis_1;
         dtvar::right_motor_1_speed = cntrlvar::controller_axis_3 - cntrlvar::controller_axis_4 - cntrlvar::controller_axis_1;
         dtvar::right_motor_2_speed = cntrlvar::controller_axis_3 + cntrlvar::controller_axis_4 - cntrlvar::controller_axis_1;
 
-    if (toggle(precision_toggle, precision_state, last_precision_state)) {
+        // Check precision state to go to precision mode
+        if (toggle(precision_toggle, precision_state, last_precision_state)) {
             dtvar::left_motor_1_speed *= dtvar::precision_constant;
             dtvar::left_motor_2_speed *= dtvar::precision_constant;
             dtvar::right_motor_1_speed *= dtvar::precision_constant;
             dtvar::right_motor_2_speed *= dtvar::precision_constant;
         }
 
+        // Spin the motors based on the calculated speeds
         left_motor_1.spin(vex::directionType::fwd, dtvar::left_motor_1_speed, vex::percentUnits::pct);
         left_motor_2.spin(vex::directionType::fwd, dtvar::left_motor_2_speed, vex::percentUnits::pct);
         right_motor_1.spin(vex::directionType::fwd, dtvar::right_motor_1_speed, vex::percentUnits::pct);

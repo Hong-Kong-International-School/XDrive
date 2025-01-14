@@ -223,21 +223,32 @@ void move(double x, double y, double heading) {
     brain.Screen.newLine();
     #endif
 
+
+    // Creates a while loop until the desired position and rotation is reached
     while (fabs(dtvar::relative_x) > dtvar::distance_tolerance or fabs(dtvar::relative_y) > dtvar::distance_tolerance or fabs(dtvar::relative_rotation) > dtvar::rotation_tolerance) {
+        // Update correct position and rotation
         dtvar::current_x = gps.xPosition();
         dtvar::current_y = gps.yPosition();
         dtvar::current_rotation = gps.heading();
+
+        // Calculates relative position and rotation
         dtvar::relative_x = x - dtvar::current_x;
         dtvar::relative_y = y - dtvar::current_y;
         dtvar::relative_rotation = heading - dtvar::current_rotation;
+
+        // Calculates the rotational values (thetha = angle, sine and consine being the trig functions respectivley)
+        // Used for coordinate transformation
         dtvar::theta = dtvar::current_rotation + 45;
         dtvar::sine = sin(dtvar::theta / 180.0 * M_PI);
         dtvar::cosine = cos(dtvar::theta / 180.0 * M_PI);
 
+        // Calculate erros in coordinate transformation system mentioned above
         dtvar::error_axis_1 = dtvar::cosine * dtvar::current_x + dtvar::sine * dtvar::current_y;
         dtvar::error_axis_2 = dtvar::cosine * dtvar::current_y - dtvar::sine * dtvar::current_x;
         dtvar::error_rotation = dtvar::relative_rotation;
 
+        // Calculate positional, integral and derivative values for control
+        // Format: Porportional value is equal to error value * constant (k_ for positiona, k_a for angular)
         dtvar::proportional_axis_1 = dtvar::error_axis_1 * dtvar::kp;
         dtvar::proportional_axis_2 = dtvar::error_axis_2 * dtvar::kp;
         dtvar::proportional_rotation = dtvar::error_rotation * dtvar::kpa;
@@ -250,24 +261,31 @@ void move(double x, double y, double heading) {
         dtvar::derivative_axis_1 = (dtvar::error_axis_1 - dtvar::last_error_axis_1) * dtvar::kd;
         dtvar::derivative_axis_2 = (dtvar::error_axis_2 - dtvar::last_error_axis_2) * dtvar::kd;
         dtvar::derivative_rotation = (dtvar::error_rotation - dtvar::last_error_rotation) * dtvar::kda;
+
+        // Calculated to aid derivative calculations
         dtvar::last_error_axis_1 = dtvar::error_axis_1;
         dtvar::last_error_axis_2 = dtvar::error_axis_2;
         dtvar::last_error_rotation = dtvar::error_rotation;
 
+        // Calculates motor power based on PID values
         dtvar::power_axis_1 = dtvar::proportional_axis_1 + dtvar::integral_axis_1 + dtvar::derivative_axis_1;
         dtvar::power_axis_2 = dtvar::proportional_axis_2 + dtvar::integral_axis_2 + dtvar::derivative_axis_2;
         dtvar::power_rotation = dtvar::proportional_rotation + dtvar::integral_rotation + dtvar::derivative_rotation;
 
+        // Calculates motor speed based on the power and rotational values calculated above
         dtvar::left_motor_1_speed  = dtvar::power_axis_1 - dtvar::power_rotation;
         dtvar::left_motor_2_speed  = dtvar::power_axis_2 - dtvar::power_rotation;
         dtvar::right_motor_1_speed = dtvar::power_axis_2 + dtvar::power_rotation;
         dtvar::right_motor_2_speed = dtvar::power_axis_1 + dtvar::power_rotation;
 
+        // Sets motor speed for each wheel
         left_motor_1.spin(vex::directionType::fwd, dtvar::left_motor_1_speed, vex::percentUnits::pct);
         left_motor_2.spin(vex::directionType::fwd, dtvar::left_motor_2_speed, vex::percentUnits::pct);
         right_motor_2.spin(vex::directionType::fwd, dtvar::right_motor_1_speed, vex::percentUnits::pct);
         right_motor_2.spin(vex::directionType::fwd, dtvar::right_motor_2_speed, vex::percentUnits::pct);
 
+
+        // Debug Code
         #ifdef DEBUG_OUT
         std::cout << "\n\n\n";
         std::cout << "Current (x, y, heading): (" << dtvar::current_x << ", " << dtvar::current_y << ", " << dtvar::current_rotation << ")\n";
@@ -286,6 +304,31 @@ void move(double x, double y, double heading) {
         brain.Screen.newLine();
         brain.Screen.print("Pa=%.2lf, Ia=%.2lf, Da=%.2lf", dtvar::proportional_rotation, dtvar::integral_rotation, dtvar::derivative_rotation);
         #endif
+
+        /*
+        Breakdown of code:
+
+        1. The control loop runs as long as the difference between the current position/rotation and the desired position/rotation is above certain tolerance values.
+
+        2. The current position and rotation of the robot are obtained from a GPS system (represented by `gps.xPosition()`, `gps.yPosition()`, and `gps.heading()`).
+
+        3. The relative position and rotation errors are calculated by subtracting the current values from the desired values.
+
+        4. A coordinate transformation is performed using the current rotation angle (`dtvar::current_rotation`) to align the error calculation with a specific axis.
+
+        5. Proportional, integral, and derivative terms are computed for each axis of control (axis 1, axis 2, and rotation). These terms are multiplied by corresponding gain constants (kp, ki, kd, kpa, kia, kda) to adjust the control response.
+
+        6. Integral and derivative terms are accumulated and updated for each iteration of the loop.
+
+        7. Motor power values are calculated based on the control terms for each axis.
+
+        8. The motor speeds for each wheel are calculated based on the power values and the rotational direction.
+
+        9. The calculated speeds are applied to the corresponding motors using the VEX Robotics API (`left_motor_1.spin()`, `left_motor_2.spin()`, etc.).
+
+        10. Optional debug information can be printed.
+        */
+
     }
 }
 
